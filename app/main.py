@@ -1,7 +1,7 @@
 from flask import Flask, request,session
 from twilio.twiml.messaging_response import MessagingResponse
 app = Flask(__name__)
-from chatbot import ask,append_interaction_to_chat_log
+from .chatbot import *
 app.config['SECRET_KEY'] = 'top-secret!'
 
 
@@ -20,7 +20,3 @@ def bot():
     r = MessagingResponse()
     r.message(answer)
     return str(r)
-
-
-if __name__ == '__main__':
-    app.run()
