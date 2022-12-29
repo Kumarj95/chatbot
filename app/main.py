@@ -14,17 +14,6 @@ text_logs= db.text_logs
 def bot():
     incoming_msg = request.values['Body']
     incoming_phone= request.values['From']
-    if('phone_1' not in sorted(list(text_logs.index_information()))):
-        text_logs.create_index([('phone', pymongo.ASCENDING)],
-                                    unique=True)
-    message={"phone":incoming_phone, "Message": {"body":incoming_msg, "time":datetime.now(timezone.utc) }}
-    exists = text_logs.find_one({"phone":message["phone"]})
-    if not exists:
-        text_logs.insert_one({"phone":message["phone"], "messages":[message["Message"]]})
-    else:
-        newTextLog=exists
-        newTextLog["messages"].append(message["Message"])
-        text_logs.update_one({"phone":message["phone"]}, {"$set":newTextLog} ,upsert=False)
     
     # if('phone_1' not in sorted(list(text_logs.index_information()))):
     #     text_logs.create_index([('phone', pymongo.ASCENDING)],
@@ -34,6 +23,18 @@ def bot():
     question=incoming_msg
     chat_log = session.get('chat_log')
     answer=ask(question,chat_log)
+    if('phone_1' not in sorted(list(text_logs.index_information()))):
+        text_logs.create_index([('phone', pymongo.ASCENDING)],
+                                    unique=True)
+    message={"phone":incoming_phone, "Message": {"body":incoming_msg, "response": answer,"time":datetime.now(timezone.utc) }}
+    exists = text_logs.find_one({"phone":message["phone"]})
+    if not exists:
+        text_logs.insert_one({"phone":message["phone"], "messages":[message["Message"]]})
+    else:
+        newTextLog=exists
+        newTextLog["messages"].append(message["Message"])
+        text_logs.update_one({"phone":message["phone"]}, {"$set":newTextLog} ,upsert=False)
+
     session['chat_log']=append_interaction_to_chat_log(question,answer,chat_log)
 
     # use the incoming message to generate the response here
